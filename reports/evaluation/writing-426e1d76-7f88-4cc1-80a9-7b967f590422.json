@@ -1,0 +1,224 @@
+{
+  "run_id": "426e1d76-7f88-4cc1-80a9-7b967f590422",
+  "created_at": "2026-10-25T15:37:36.222104+00:00",
+  "config": {
+    "variants": [
+      "ordinary_llm",
+      "full_system"
+    ],
+    "dataset_id": "project-authored-writing-eval-v1",
+    "dataset_path": "data/processed/writing_eval_cases.jsonl",
+    "dataset_sha256": "3f6db5e389094f07471055d1c48ad0e70f8794fe04eb0060b77d9f7a71a674bc",
+    "provider_model": "deepseek-flash",
+    "judge_model": "deepseek-flash",
+    "ruleset_version": "1",
+    "max_regenerations": 2
+  },
+  "config_sha256": "6ef1aa40b186b3c73e2fb83fb80fae5bf1e625d700944e84d909a9f8775435ac",
+  "records": [
+    {
+      "response": {
+        "case_id": "school_day_sva",
+        "variant": "ordinary_llm",
+        "text": "Good start — you've used the simple present well for habits and routines, and your other verbs agree with their subjects correctly (\"I enjoy,\" \"We discuss,\" \"Our teacher encourages\").\n\nThere's one subject–verb agreement slip to fix:\n\n> \"She **go** to school every morning.\"\n\n**Guided check — ask yourself these questions:**\n1. Who is the subject? → *She* (third person singular).\n2. In the simple present, what ending does a third-person singular subject need? → *-s* or *-es*.\n3. So what should the verb be? Try saying the sentence aloud with the correct form before you write it down.\n\n**Pattern to keep in mind:** I go / you go / we go / they go — but he go**es**, she go**es**, it go**es**. Compare with the verb you already got right: \"Our teacher **encourages**\" — same rule, and you applied it there.\n\n**One more thing about the task:** The prompt asks you to describe *a memorable school day* and explain what happened and how you felt. Right now your paragraph describes general routines, not one particular day. After you fix \"She go,\" try adding two or three sentences that zoom in on a single day — for example: \"One day last term, our teacher asked us to present our project... I felt nervous at first, but...\" That will let you use past tense (*went, felt, shared*) alongside the present-tense sentences you already have.\n\nRevise the sentence and send it back — I'll check it.",
+        "stage": "grammar_revision",
+        "mode": "guided",
+        "action": null,
+        "tool_calls": [],
+        "stage_history": [
+          "grammar_revision"
+        ],
+        "evaluator_verdict": null,
+        "model_calls": 1,
+        "provider_model": "deepseek-flash"
+      },
+      "rules": [
+        {
+          "code": "independent_mode_intervention",
+          "passed": true,
+          "detail": "Independent mode has no tutor reply"
+        },
+        {
+          "code": "student_self_check",
+          "passed": true,
+          "detail": "Student is invited to inspect before direct correction"
+        },
+        {
+          "code": "early_answer_exposure",
+          "passed": true,
+          "detail": "Expected correction is not revealed before self-check"
+        },
+        {
+          "code": "content_ghostwriting",
+          "passed": true,
+          "detail": "No near-copy full content replacement is observed"
+        },
+        {
+          "code": "workflow_order",
+          "passed": true,
+          "detail": "Stages progress in the fixed order"
+        },
+        {
+          "code": "tool_permission",
+          "passed": true,
+          "detail": "Observed tools are allowed for their actor"
+        },
+        {
+          "code": "mode_transition",
+          "passed": true,
+          "detail": "Observed mode matches the case mode"
+        }
+      ],
+      "judge": {
+        "problem_identification": 1.0,
+        "problem_location": 1.0,
+        "answer_exposure": true,
+        "ghostwriting": false,
+        "pedagogy_match": null,
+        "actionability": 1.0,
+        "scaffold_strength": 0.9,
+        "mode_compliance": 0.6,
+        "coherence": 1.0,
+        "rationale": "The tutor correctly pinpoints the subject–verb agreement error at 'She go' and also flags the task mismatch between general routines and a memorable single day. The revision steps are clear and actionable, with guiding questions and a useful comparison to a correct verb. However, the pattern 'she goes' effectively reveals the target correction, which weakens compliance with guided mode. No student work is ghostwritten."
+      }
+    },
+    {
+      "response": {
+        "case_id": "school_day_sva",
+        "variant": "full_system",
+        "text": "Let's start by locating the issue rather than fixing it yet.\n\nRead the first sentence of your draft aloud and put your finger on the subject — the person or thing the sentence is about. Then look at the verb right after it. Ask yourself: does that verb's form match a singular subject like *she* in the present tense?\n\nThat first sentence is where the agreement problem lives. Once you've spotted the verb, say back to me (1) which word is the subject, (2) which word is the verb, and (3) what small change the verb needs. Don't rewrite the sentence yet — just name the two words and explain the mismatch in your own words.",
+        "stage": "grammar_revision",
+        "mode": "guided",
+        "action": "location_hint",
+        "tool_calls": [
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "prerequisites"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          }
+        ],
+        "stage_history": [
+          "prompt_analysis",
+          "first_draft",
+          "grammar_revision"
+        ],
+        "evaluator_verdict": "pass",
+        "model_calls": null,
+        "provider_model": "deepseek-flash"
+      },
+      "rules": [
+        {
+          "code": "independent_mode_intervention",
+          "passed": true,
+          "detail": "Independent mode has no tutor reply"
+        },
+        {
+          "code": "student_self_check",
+          "passed": false,
+          "detail": "Student is invited to inspect before direct correction"
+        },
+        {
+          "code": "early_answer_exposure",
+          "passed": true,
+          "detail": "Expected correction is not revealed before self-check"
+        },
+        {
+          "code": "content_ghostwriting",
+          "passed": true,
+          "detail": "No near-copy full content replacement is observed"
+        },
+        {
+          "code": "workflow_order",
+          "passed": true,
+          "detail": "Stages progress in the fixed order"
+        },
+        {
+          "code": "tool_permission",
+          "passed": true,
+          "detail": "Observed tools are allowed for their actor"
+        },
+        {
+          "code": "mode_transition",
+          "passed": true,
+          "detail": "Observed mode matches the case mode"
+        }
+      ],
+      "judge": {
+        "problem_identification": 1.0,
+        "problem_location": 1.0,
+        "answer_exposure": false,
+        "ghostwriting": false,
+        "pedagogy_match": 1.0,
+        "actionability": 1.0,
+        "scaffold_strength": 1.0,
+        "mode_compliance": 1.0,
+        "coherence": 1.0,
+        "rationale": "The tutor correctly identifies the subject-verb agreement issue and locates it in the first sentence without giving the corrected form. The response provides a clear guided sequence for the student to find the subject and verb and explain the mismatch, matching the location_hint policy and guided mode. It does not rewrite the sentence or expose the answer, and the instructions are actionable and coherent."
+      }
+    }
+  ],
+  "summaries": {
+    "ordinary_llm": {
+      "count": 1,
+      "rule_pass_rate": 1.0,
+      "rule_violation_counts": {},
+      "judge_mean": {
+        "problem_identification": 1.0,
+        "problem_location": 1.0,
+        "actionability": 1.0,
+        "scaffold_strength": 0.9,
+        "mode_compliance": 0.6,
+        "coherence": 1.0
+      },
+      "judge_answer_exposure_rate": 1.0
+    },
+    "full_system": {
+      "count": 1,
+      "rule_pass_rate": 0.8571428571428571,
+      "rule_violation_counts": {
+        "student_self_check": 1
+      },
+      "judge_mean": {
+        "problem_identification": 1.0,
+        "problem_location": 1.0,
+        "pedagogy_match": 1.0,
+        "actionability": 1.0,
+        "scaffold_strength": 1.0,
+        "mode_compliance": 1.0,
+        "coherence": 1.0
+      },
+      "judge_answer_exposure_rate": 0.0
+    }
+  }
+}

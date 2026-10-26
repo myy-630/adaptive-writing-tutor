@@ -1,0 +1,257 @@
+{
+  "run_id": "5460c3b8-fd60-4f38-8f60-62e3d515a978",
+  "created_at": "2026-10-25T15:50:02.758074+00:00",
+  "config": {
+    "variants": [
+      "ordinary_llm",
+      "full_system"
+    ],
+    "variant_settings": {
+      "ordinary_llm": {
+        "name": "ordinary_llm",
+        "fixed_prompt": false,
+        "student_state": false,
+        "pedagogy_policy": false,
+        "pedagogy_evaluator": false,
+        "full_workflow": false
+      },
+      "full_system": {
+        "name": "full_system",
+        "fixed_prompt": true,
+        "student_state": true,
+        "pedagogy_policy": true,
+        "pedagogy_evaluator": true,
+        "full_workflow": true
+      }
+    },
+    "dataset_id": "project-authored-writing-eval-v1",
+    "dataset_path": "data/processed/writing_eval_cases.jsonl",
+    "dataset_sha256": "3f6db5e389094f07471055d1c48ad0e70f8794fe04eb0060b77d9f7a71a674bc",
+    "provider_model": "deepseek-flash",
+    "judge_model": "deepseek-flash",
+    "ruleset_version": "3",
+    "max_regenerations": 2
+  },
+  "config_sha256": "6a02a89874090c406628ee9a7fb9e175ff74792761be42817774c0175adb5037",
+  "parent_report_sha256": null,
+  "records": [
+    {
+      "response": {
+        "case_id": "school_day_sva",
+        "variant": "ordinary_llm",
+        "text": "You've spotted the right place to look — let's fix \"She go to school every morning.\"\n\n**What's happening:** In the present simple, the verb must agree with its subject. When the subject is third-person singular (he / she / it / a singular noun like \"my teacher\"), the verb takes **-s**:\n\n- I go → She **goes**\n- We discuss → Our teacher **discusses**\n- They enjoy → He **enjoys**\n\nYou already did this correctly twice in your paragraph — \"Our teacher **encourages** us\" and \"She **goes**\" would follow the same pattern — so the rule is clearly in your toolkit; this one just slipped past.\n\n**Your turn:** Rewrite the first sentence with the correct verb form, then read the whole paragraph aloud. Does every subject match its verb? (Check \"I enjoy\" and \"We discuss\" too — those are already correct, so you can confirm rather than change them.)\n\n**One more thing for the task itself:** The prompt asks you to describe *a memorable school day* — a specific day in the past, with what happened and how you felt. Your paragraph is mostly general present-tense description (\"every morning,\" \"after school\"). As you revise, try shifting into past tense and adding one concrete moment and one feeling, e.g. \"That morning, our teacher asked us to present our project, and my hands shook as I stood up.\" That will bring you closer to what the prompt is asking for.",
+        "stage": "grammar_revision",
+        "mode": "guided",
+        "action": null,
+        "tool_calls": [],
+        "stage_history": [
+          "grammar_revision"
+        ],
+        "evaluator_verdict": null,
+        "model_calls": 1,
+        "provider_model": "deepseek-flash"
+      },
+      "rules": [
+        {
+          "code": "independent_mode_intervention",
+          "applicable": false,
+          "passed": true,
+          "detail": "Independent mode has no tutor reply"
+        },
+        {
+          "code": "student_self_check",
+          "applicable": true,
+          "passed": true,
+          "detail": "Student is invited to inspect before direct correction"
+        },
+        {
+          "code": "early_answer_exposure",
+          "applicable": true,
+          "passed": false,
+          "detail": "Expected correction is not revealed before self-check"
+        },
+        {
+          "code": "content_ghostwriting",
+          "applicable": false,
+          "passed": true,
+          "detail": "No near-copy full content replacement is observed"
+        },
+        {
+          "code": "workflow_order",
+          "applicable": true,
+          "passed": true,
+          "detail": "Stages progress in the fixed order"
+        },
+        {
+          "code": "tool_permission",
+          "applicable": false,
+          "passed": true,
+          "detail": "Observed tools are allowed for their actor"
+        },
+        {
+          "code": "mode_transition",
+          "applicable": true,
+          "passed": true,
+          "detail": "Observed mode matches the case mode"
+        }
+      ],
+      "judge": {
+        "problem_identification": 1.0,
+        "problem_location": 1.0,
+        "answer_exposure": true,
+        "ghostwriting": false,
+        "pedagogy_match": null,
+        "actionability": 1.0,
+        "scaffold_strength": 0.85,
+        "mode_compliance": 0.7,
+        "coherence": 1.0,
+        "rationale": "The tutor correctly identifies and locates the subject-verb agreement issue at “She go,” explains the third-person singular -s rule, and gives clear next steps. However, it explicitly reveals the corrected form “She goes” rather than withholding it for the student, which weakens guided-mode compliance and creates answer exposure. It does not ghostwrite the student’s full revision, though it provides a model sentence for the task. Overall coherent and actionable."
+      }
+    },
+    {
+      "response": {
+        "case_id": "school_day_sva",
+        "variant": "full_system",
+        "text": "Start with your first sentence and find its subject and its verb — the pair right at the beginning. Read that pair slowly and ask yourself whether the verb form fits that particular subject. Once you spot it, revise just that verb and keep the rest of the sentence as it is. Tell me which verb you changed and why.",
+        "stage": "grammar_revision",
+        "mode": "guided",
+        "action": "location_hint",
+        "tool_calls": [
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "read_state"
+          },
+          {
+            "actor": "planner",
+            "name": "prerequisites"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          },
+          {
+            "actor": "teaching",
+            "name": "read_state"
+          }
+        ],
+        "stage_history": [
+          "prompt_analysis",
+          "first_draft",
+          "grammar_revision"
+        ],
+        "evaluator_verdict": "pass",
+        "model_calls": null,
+        "provider_model": "deepseek-flash"
+      },
+      "rules": [
+        {
+          "code": "independent_mode_intervention",
+          "applicable": false,
+          "passed": true,
+          "detail": "Independent mode has no tutor reply"
+        },
+        {
+          "code": "student_self_check",
+          "applicable": true,
+          "passed": true,
+          "detail": "Student is invited to inspect before direct correction"
+        },
+        {
+          "code": "early_answer_exposure",
+          "applicable": true,
+          "passed": true,
+          "detail": "Expected correction is not revealed before self-check"
+        },
+        {
+          "code": "content_ghostwriting",
+          "applicable": false,
+          "passed": true,
+          "detail": "No near-copy full content replacement is observed"
+        },
+        {
+          "code": "workflow_order",
+          "applicable": true,
+          "passed": true,
+          "detail": "Stages progress in the fixed order"
+        },
+        {
+          "code": "tool_permission",
+          "applicable": true,
+          "passed": true,
+          "detail": "Observed tools are allowed for their actor"
+        },
+        {
+          "code": "mode_transition",
+          "applicable": true,
+          "passed": true,
+          "detail": "Observed mode matches the case mode"
+        }
+      ],
+      "judge": {
+        "problem_identification": 0.8,
+        "problem_location": 0.95,
+        "answer_exposure": false,
+        "ghostwriting": false,
+        "pedagogy_match": 1.0,
+        "actionability": 0.9,
+        "scaffold_strength": 0.85,
+        "mode_compliance": 1.0,
+        "coherence": 1.0,
+        "rationale": "The tutor does not name subject-verb agreement explicitly or reveal 'goes,' but gives a precise location hint to the first sentence's subject-verb pair and prompts the student to check whether the verb form fits the subject. This fits guided mode and the location_hint policy well. Steps are clear and actionable, with moderate scaffolding through self-check and explanation requirements. No answer exposure or ghostwriting."
+      }
+    }
+  ],
+  "summaries": {
+    "ordinary_llm": {
+      "count": 1,
+      "rule_pass_rate": 0.75,
+      "rule_violation_counts": {
+        "early_answer_exposure": 1
+      },
+      "judge_mean": {
+        "problem_identification": 1.0,
+        "problem_location": 1.0,
+        "actionability": 1.0,
+        "scaffold_strength": 0.85,
+        "mode_compliance": 0.7,
+        "coherence": 1.0
+      },
+      "judge_answer_exposure_rate": 1.0
+    },
+    "full_system": {
+      "count": 1,
+      "rule_pass_rate": 1.0,
+      "rule_violation_counts": {},
+      "judge_mean": {
+        "problem_identification": 0.8,
+        "problem_location": 0.95,
+        "pedagogy_match": 1.0,
+        "actionability": 0.9,
+        "scaffold_strength": 0.85,
+        "mode_compliance": 1.0,
+        "coherence": 1.0
+      },
+      "judge_answer_exposure_rate": 0.0
+    }
+  }
+}

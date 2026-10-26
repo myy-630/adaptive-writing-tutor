@@ -1,0 +1,15 @@
+{
+  "dataset": "MRBench V1",
+  "source_url": "https://github.com/kaushal0494/UnifyingAITutorEvaluation/blob/main/MRBench/MRBench_V1.json",
+  "source_blob_sha": "5cff7f6bb381154a2a49532add0642f2230e3cdd",
+  "sample_sha256": "827adb9a23964bd367b58c745edf8fb7743e7f708b13bdce29f1b3aa01f42197",
+  "source_license": "CC BY-SA 4.0",
+  "underlying_source": "MathDial",
+  "underlying_source_url": "https://huggingface.co/datasets/eth-nlped/mathdial",
+  "underlying_source_license": "CC BY 4.0",
+  "filter": "Data == MathDial and Split == test; first four rows in upstream order",
+  "source_conversation_count": 192,
+  "sample_conversation_count": 4,
+  "purpose": "Adapter and judge calibration smoke test; not a writing-tutor performance benchmark",
+  "citation": "Maurya et al., NAACL 2025, https://aclanthology.org/2025.naacl-long.57/"
+}

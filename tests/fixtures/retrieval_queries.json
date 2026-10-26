@@ -1,0 +1,5 @@
+[
+  {"query": "school", "expected_substring": "school"},
+  {"query": "educational institution", "expected_substring": "school"},
+  {"query": "a memorable childhood companion", "expected_substring": "friend"}
+]

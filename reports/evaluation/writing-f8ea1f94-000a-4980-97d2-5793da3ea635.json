@@ -1,0 +1,113 @@
+{
+  "run_id": "f8ea1f94-000a-4980-97d2-5793da3ea635",
+  "created_at": "2026-10-25T15:44:30.886354+00:00",
+  "config": {
+    "variants": [
+      "pedagogy_policy"
+    ],
+    "variant_settings": {
+      "pedagogy_policy": {
+        "name": "pedagogy_policy",
+        "fixed_prompt": true,
+        "student_state": true,
+        "pedagogy_policy": true,
+        "pedagogy_evaluator": false,
+        "full_workflow": false
+      }
+    },
+    "dataset_id": "project-authored-writing-eval-v1",
+    "dataset_path": "data/processed/writing_eval_cases.jsonl",
+    "dataset_sha256": "3f6db5e389094f07471055d1c48ad0e70f8794fe04eb0060b77d9f7a71a674bc",
+    "provider_model": "deepseek-flash",
+    "judge_model": "deepseek-flash",
+    "ruleset_version": "2",
+    "max_regenerations": 2
+  },
+  "config_sha256": "7fe6dea01ac1d90d51f302ffa5db80ec41a6a73e59cd0241683cfbba50161593",
+  "parent_report_sha256": null,
+  "records": [
+    {
+      "response": {
+        "case_id": "school_day_sva",
+        "variant": "pedagogy_policy",
+        "text": "Let's zoom in on one spot. Look at your first sentence: \"She go to school every morning.\" Read it aloud and ask yourself two questions:\n\n1. Who is doing the action? (Find the subject.)\n2. Is that subject singular or plural — one person, or more than one?\n\nNow check the verb that follows it. In the present simple, the verb form changes depending on whether the subject is he/she/it or I/you/we/they. Does the verb in that sentence match the subject you found?\n\nLook especially at \"She go\" — that is where I'd like you to focus. Don't rewrite the whole sentence yet; first just tell me whether the subject and verb agree there, and why. Once you can explain the rule in your own words, revise that one verb.\n\nA tip for the rest of the paragraph: your other sentences (\"I enjoy,\" \"We discuss,\" \"Our teacher encourages\") are worth double-checking with the same two questions, since you're aiming to self-revise. When you're done, tell me what you changed and the rule you applied.",
+        "stage": "grammar_revision",
+        "mode": "guided",
+        "action": "location_hint",
+        "tool_calls": [],
+        "stage_history": [
+          "grammar_revision"
+        ],
+        "evaluator_verdict": null,
+        "model_calls": 1,
+        "provider_model": "deepseek-flash"
+      },
+      "rules": [
+        {
+          "code": "independent_mode_intervention",
+          "passed": true,
+          "detail": "Independent mode has no tutor reply"
+        },
+        {
+          "code": "student_self_check",
+          "passed": true,
+          "detail": "Student is invited to inspect before direct correction"
+        },
+        {
+          "code": "early_answer_exposure",
+          "passed": true,
+          "detail": "Expected correction is not revealed before self-check"
+        },
+        {
+          "code": "content_ghostwriting",
+          "passed": true,
+          "detail": "No near-copy full content replacement is observed"
+        },
+        {
+          "code": "workflow_order",
+          "passed": true,
+          "detail": "Stages progress in the fixed order"
+        },
+        {
+          "code": "tool_permission",
+          "passed": true,
+          "detail": "Observed tools are allowed for their actor"
+        },
+        {
+          "code": "mode_transition",
+          "passed": true,
+          "detail": "Observed mode matches the case mode"
+        }
+      ],
+      "judge": {
+        "problem_identification": 0.95,
+        "problem_location": 1.0,
+        "answer_exposure": false,
+        "ghostwriting": false,
+        "pedagogy_match": 1.0,
+        "actionability": 0.95,
+        "scaffold_strength": 0.95,
+        "mode_compliance": 1.0,
+        "coherence": 1.0,
+        "rationale": "The tutor precisely locates the issue at \"She go\" and guides the student to notice subject-verb agreement without giving the correction. The response uses clear questions and a focused revision step, fitting the guided mode and location-hint policy. It is actionable and coherent, with no answer exposure or ghostwriting."
+      }
+    }
+  ],
+  "summaries": {
+    "pedagogy_policy": {
+      "count": 1,
+      "rule_pass_rate": 1.0,
+      "rule_violation_counts": {},
+      "judge_mean": {
+        "problem_identification": 0.95,
+        "problem_location": 1.0,
+        "pedagogy_match": 1.0,
+        "actionability": 0.95,
+        "scaffold_strength": 0.95,
+        "mode_compliance": 1.0,
+        "coherence": 1.0
+      },
+      "judge_answer_exposure_rate": 0.0
+    }
+  }
+}

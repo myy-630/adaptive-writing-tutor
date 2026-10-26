@@ -1,0 +1,74 @@
+{
+  "created_at": "2026-10-25T15:37:47.718756+00:00",
+  "benchmark_id": "MRBench_V1:MathDial:test:sample4",
+  "sample_sha256": "827adb9a23964bd367b58c745edf8fb7743e7f708b13bdce29f1b3aa01f42197",
+  "source_license": "CC BY-SA 4.0",
+  "underlying_source_license": "CC BY 4.0",
+  "judge_model": "deepseek-flash",
+  "items": [
+    {
+      "response_id": "930-b01cb51d-748d-460c-841a-08e4d5cd5cc7:Expert",
+      "gold_annotations": {
+        "Mistake_Identification": "Yes",
+        "Mistake_Location": "Yes",
+        "Revealing_of_the_Answer": "No",
+        "Providing_Guidance": "Yes",
+        "Actionability": "Yes",
+        "humanlikeness": "Yes",
+        "Coherence": "Yes",
+        "Tutor_Tone": "Neutral"
+      },
+      "judge": {
+        "problem_identification": 0.6,
+        "problem_location": 0.7,
+        "answer_exposure": false,
+        "ghostwriting": false,
+        "pedagogy_match": null,
+        "actionability": 0.6,
+        "scaffold_strength": 0.5,
+        "mode_compliance": null,
+        "coherence": 0.8,
+        "rationale": "The tutor points to the key overlooked condition—that 2,000 steps remained after the jog—which challenges the student's 4,000-step conclusion. However, it does not explicitly explain the misconception or guide the student to distinguish remaining steps from steps taken during the jog. The response is a brief, relevant cue rather than a full scaffold, and it does not reveal the final answer or write the student's solution."
+      }
+    },
+    {
+      "response_id": "930-b01cb51d-748d-460c-841a-08e4d5cd5cc7:GPT4",
+      "gold_annotations": {
+        "Mistake_Identification": "Yes",
+        "Mistake_Location": "Yes",
+        "Revealing_of_the_Answer": "Yes (and the answer is correct)",
+        "Providing_Guidance": "Yes",
+        "Actionability": "No",
+        "humanlikeness": "Yes",
+        "Coherence": "Yes",
+        "Tutor_Tone": "Encouraging"
+      },
+      "judge": {
+        "problem_identification": 0.7,
+        "problem_location": 0.7,
+        "answer_exposure": true,
+        "ghostwriting": false,
+        "pedagogy_match": null,
+        "actionability": 0.4,
+        "scaffold_strength": 0.3,
+        "mode_compliance": null,
+        "coherence": 0.8,
+        "rationale": "The tutor identifies the key error: the student treated the 4,000 steps remaining before the jog as the jog itself, ignoring that 2,000 steps remained afterward. However, the explanation is somewhat imprecise and directly states the correct answer (2,000) instead of guiding the student to derive it. It invites joint recalculation but provides little actual scaffolding or actionable steps."
+      }
+    }
+  ],
+  "agreement": {
+    "Mistake_Identification": 1.0,
+    "Mistake_Location": 1.0,
+    "Revealing_of_the_Answer": 1.0,
+    "Actionability": 1.0,
+    "Coherence": 1.0
+  },
+  "compared_counts": {
+    "Mistake_Identification": 2,
+    "Mistake_Location": 2,
+    "Revealing_of_the_Answer": 2,
+    "Actionability": 2,
+    "Coherence": 2
+  }
+}
