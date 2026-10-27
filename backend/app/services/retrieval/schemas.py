@@ -22,6 +22,7 @@ class QueryRewrite(DomainModel):
 
 
 class IndexMetadata(DomainModel):
+    index_version: str = Field(default="legacy", min_length=1)
     corpus_sha256: str
     model_name: str
     fastembed_version: str

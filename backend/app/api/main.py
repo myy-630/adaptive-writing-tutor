@@ -13,7 +13,9 @@ from app.core.errors import DomainError
 from app.core.logging import configure_logging
 from app.core.provider import ModelProvider, UnconfiguredModelProvider
 from app.core.responses_provider import ResponsesModelProvider, configured_responses_provider
-from app.db.session import create_database_engine
+from app.db.session import create_database_engine, create_session_factory
+from app.services.retrieval.runtime import RetrievalRuntime
+from app.services.retrieval.store import ResourceStore
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +28,19 @@ def create_app(settings: Settings | None = None, provider: ModelProvider | None 
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         engine = create_database_engine(settings)
         app.state.engine = engine
+        app.state.sessions = create_session_factory(engine)
         app.state.settings = settings
         selected_provider = (
             provider or configured_responses_provider(settings) or UnconfiguredModelProvider()
         )
         app.state.model_provider = selected_provider
+        retrieval_runtime = RetrievalRuntime(ResourceStore(app.state.sessions), settings)
+        app.state.retrieval_runtime = retrieval_runtime
         try:
+            retrieval_runtime.current()
             yield
         finally:
+            retrieval_runtime.close()
             if isinstance(selected_provider, ResponsesModelProvider):
                 await selected_provider.aclose()
             engine.dispose()

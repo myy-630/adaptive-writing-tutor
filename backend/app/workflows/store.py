@@ -12,6 +12,7 @@ from app.domain.enums import TeachingStage
 from app.domain.schemas import LearningEvidence
 from app.models import DraftRecord, TeachingSessionRecord, WorkflowEventRecord, WritingTaskRecord
 from app.services.student_state.manager import StudentStateManager
+from app.workflows.ability_rubric import RubricAssessment
 from app.workflows.draft_comparison import DraftComparison
 from app.workflows.schemas import WorkflowResult, WorkflowSubmission
 from app.workflows.stage_gate import StageGate, StageOutcome
@@ -179,6 +180,7 @@ class WorkflowStore:
             "comparison": outcome.comparison.model_dump(mode="json")
             if outcome.comparison
             else None,
+            "rubric": outcome.rubric.model_dump(mode="json") if outcome.rubric else None,
         }
         return outcome
 
@@ -254,4 +256,5 @@ class WorkflowStore:
             comparison=(
                 DraftComparison.model_validate(raw["comparison"]) if raw.get("comparison") else None
             ),
+            rubric=(RubricAssessment.model_validate(raw["rubric"]) if raw.get("rubric") else None),
         )

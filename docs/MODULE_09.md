@@ -15,7 +15,7 @@ Registry 含作文编辑器、审题卡、教学对话区、语法错误卡、�
 - `GET /sessions/{id}?student_id=...`：恢复后端真实状态。语法阶段按需返回 `grammar_hints` 和 `knowledge_paths`。`grammar_hints` 不含 `corrected_expression` 或建议改写字段；知识图谱路径来自 Grammar Knowledge Graph，不由 RAG 生成。独立模式的 `last_result`、语法提示和知识路径为空。
 - `VITE_API_BASE_URL` 可覆盖前端 API 地址；开发时 Vite 将相关路径代理到 8000 端口。DeepSeek Key 仅在后端私有 `.env` 中。
 
-当前 HTTP 会话归属依赖调用方提供学生 UUID；尚无账号登录和生产身份认证。`localStorage` 仅用于记住会话标识，不承担身份认证。工作区不自动保存未提交文本，浏览器在提交前关闭会丢失本地编辑内容。能力面板显示 Student State 的实际值；没有证据时明确标注初始估计。语法提示只覆盖现有 Analyzer 能识别的保守规则。
+当前 HTTP 会话归属依赖调用方提供学生 UUID；尚无账号登录和生产身份认证。`localStorage` 仅用于记住会话标识，不承担身份认证。工作区不自动保存未提交文本，浏览器在提交前关闭会丢失本地编辑内容。能力面板显示 Student State 的实际值；没有量表证据时明确标注初始估计，有证据时说明百分比只反映已检查的写作特征。量表标准与局限见 [五维写作能力的过程性量表](ABILITY_RUBRIC.md)。语法提示只覆盖现有 Analyzer 能识别的保守规则。
 
 最终评估完成后，工作区将两稿比较显示为“学习反馈”，隐藏无法再提交的导师问题输入，按钮不可再次执行。浏览器刷新后从数据库恢复已完成状态与第二稿。
 

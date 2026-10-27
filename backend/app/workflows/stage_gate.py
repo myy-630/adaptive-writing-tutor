@@ -13,11 +13,13 @@ from app.domain.enums import (
 from app.domain.schemas import LearningEvidence
 from app.services.grammar.analyzer import GrammarAnalyzer
 from app.services.grammar.transfer import transfer_succeeded
+from app.workflows.ability_rubric import ObservableWritingRubric, RubricAssessment
 from app.workflows.draft_comparison import DraftComparison, compare_drafts
 from app.workflows.schemas import WorkflowSubmission
 
 STAGE_ABILITY = {
     TeachingStage.PROMPT_ANALYSIS: AbilityDimension.PROMPT_ANALYSIS,
+    TeachingStage.GRAMMAR_REVISION: AbilityDimension.GRAMMAR,
     TeachingStage.STRUCTURE_REVISION: AbilityDimension.STRUCTURE,
     TeachingStage.CONTENT_EXPANSION: AbilityDimension.CONTENT,
     TeachingStage.LANGUAGE_REFINEMENT: AbilityDimension.SENTENCE_EXPRESSION,
@@ -34,6 +36,7 @@ class StageOutcome:
     save_draft: bool = False
     evidence: LearningEvidence | None = None
     comparison: DraftComparison | None = None
+    rubric: RubricAssessment | None = None
 
 
 class StageGate:
@@ -43,6 +46,7 @@ class StageGate:
         if min_draft_words < 1:
             raise ValueError("min_draft_words must be positive")
         self.analyzer = analyzer
+        self.rubric = ObservableWritingRubric(analyzer)
         self.min_draft_words = min_draft_words
 
     def assess(
@@ -69,6 +73,15 @@ class StageGate:
             if submission.kind != "finalize" or not current_draft or not first_draft:
                 raise DomainError("finalization_not_ready", "Draft 1 and Draft 2 are required", 409)
             comparison = compare_drafts(self.analyzer, first_draft, current_draft)
+            rubric = self.rubric.assess(
+                stage=stage,
+                mode=mode,
+                submission=submission,
+                task_genre=task_genre,
+                task_required_points=task_required_points,
+                current_draft=current_draft,
+                first_draft=first_draft,
+            )
             return StageOutcome(
                 stage,
                 True,
@@ -84,8 +97,10 @@ class StageGate:
                     if comparison.remaining_count == 0
                     else EvidenceOutcome.UNCERTAIN,
                     prior_hint_level,
+                    rubric_score=rubric.score if rubric else None,
                 ),
                 comparison=comparison,
+                rubric=rubric,
             )
         if submission.kind != "response":
             raise DomainError("invalid_submission_kind", "Student response is required", 422)
@@ -104,6 +119,15 @@ class StageGate:
             first_draft,
             needs_transfer,
             transfer_verified,
+        )
+        rubric = self.rubric.assess(
+            stage=stage,
+            mode=mode,
+            submission=submission,
+            task_genre=task_genre,
+            task_required_points=task_required_points,
+            current_draft=current_draft,
+            first_draft=first_draft,
         )
         index = STAGE_ORDER.index(stage)
         next_stage = STAGE_ORDER[index + 1] if passed else stage
@@ -128,7 +152,9 @@ class StageGate:
                 knowledge_node,
                 submission.independent_revision,
                 transfer_verified and passed,
+                rubric.score if rubric else None,
             ),
+            rubric=rubric,
         )
 
     def _check_stage(
@@ -283,6 +309,7 @@ class StageGate:
         knowledge_node: str | None = None,
         independent_revision: bool = False,
         transfer_success: bool = False,
+        rubric_score: float | None = None,
     ) -> LearningEvidence:
         ability = STAGE_ABILITY.get(stage)
         if ability is None and knowledge_node is None:
@@ -299,5 +326,6 @@ class StageGate:
             independent_revision=independent_revision,
             hint_level=hint_level,
             transfer_success=transfer_success,
+            rubric_score=rubric_score,
             observed_at=observed_at,
         )

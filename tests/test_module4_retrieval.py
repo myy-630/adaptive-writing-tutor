@@ -172,7 +172,11 @@ def test_index_rebuild_reproduces_vectors_and_results(retrieval_system: tuple) -
     old_metadata = retriever.metadata
     new_metadata = retriever.build_index()
     after = retriever.search(RetrievalQuery(text="school", top_k=5))
-    assert new_metadata == old_metadata
+    assert old_metadata is not None
+    assert new_metadata.index_version != old_metadata.index_version
+    assert new_metadata.model_dump(exclude={"index_version"}) == old_metadata.model_dump(
+        exclude={"index_version"}
+    )
     assert np.allclose(retriever.vectors, old_vectors, atol=1e-6)
     assert [item.resource.id for item in before] == [item.resource.id for item in after]
 

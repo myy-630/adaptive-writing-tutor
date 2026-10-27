@@ -17,7 +17,15 @@
 → Top-K RetrievalResult
 ```
 
-Dense 模型由 FastEmbed 加载，其[模型卡](https://huggingface.co/Qdrant/bge-small-en-v1.5-onnx-Q)标记为 MIT 许可。首次下载可能较慢；模型权重与 `.npz` 索引保存在本地 `data/indexes/` 并被 Git 忽略。索引元数据保存语料哈希、模型名、FastEmbed 版本、资源数和向量维度；加载时验证匹配，不匹配则要求重建。重建后向量和固定 Query Set 排序均通过回归测试。
+Dense 模型由 FastEmbed 加载，其[模型卡](https://huggingface.co/Qdrant/bge-small-en-v1.5-onnx-Q)标记为 MIT 许可。首次下载可能较慢；模型权重与 `.npz` 索引保存在本地 `data/indexes/` 并被 Git 忽略。索引元数据保存唯一索引版本、语料哈希、模型名、FastEmbed 版本、资源数和向量维度；加载时验证匹配，不匹配则要求重建。旧版无版本号索引按 `legacy` 读取，首次重建后升级为显式版本。重建后向量和固定 Query Set 排序均通过回归测试。
+
+## 运行时复用与缓存决策
+
+按 [FastAPI lifespan](https://fastapi.tiangolo.com/advanced/events/) 的生命周期，应用为每个进程创建一次数据库会话工厂、只读 `RetrievalRuntime` 和模型 Provider。`RetrievalRuntime` 在启动时加载语料、BM25、FastEmbed 模型及向量索引；每个 Workflow 请求只读取小型元数据文件中的 `index_version`。版本未变时复用同一个检索快照；运行 `scripts/build_retrieval_index.py` 重建索引会产生新版本，下一次请求将完整加载新快照并一次性切换引用。已经取得旧快照的请求可以继续检索；切换时新进入的请求等待加载完成。索引与元数据文件的版本不一致时保留原快照，待发布完成后重试。缺失、过期或损坏的索引沿用 Tool Runtime 的降级路径。历史索引与新索引都必须匹配数据库语料哈希。
+
+2026-10-27 本机 139 条资源的定向测量（`scripts/benchmark_retrieval_runtime.py --iterations 20`）：旧实现每次加载索引和模型的中位数为 43.803 ms（5 次范围 43.249–63.846 ms）；改造后一次启动加载为 49.55 ms，请求内版本检查中位数 0.052 ms，重复检索中位数 1.769 ms。样本量和机器范围有限，这些数字只用于决定当前缓存层次，不是系统吞吐量或教学效果 Benchmark。检索本身尚未成为主要瓶颈，因此**目前不缓存检索结果，也不增加 Redis**；学生状态与模型回复始终按请求重新读取或生成。
+
+若今后在真实负载下测到检索成为瓶颈，结果缓存采用 [cache-aside](https://redis.io/docs/latest/develop/use-cases/cache-aside/)：键由规范化的完整 `RetrievalQuery`（查询文本、知识点与其他元数据过滤条件、`top_k`）和 `index_version` 组成；设置可配置 TTL 与容量上限。重建索引时新版本自动进入新命名空间，旧条目到期清除；单进程可先用有界进程内缓存，多进程一致性确有需要时再评估 Redis。缓存命中也不得跳过 Tool 权限与 Trace。当前代码没有启用这一级缓存。
 
 ## 核心接口
 
@@ -35,3 +43,4 @@ Knowledge Graph 与 RAG 代码分离。检索资源可携带稳定知识点 ID �
 - 当前重排为可解释的确定性启发式评分，不是训练过的 cross-encoder；没有真实教学效果指标。
 - Tatoeba 已审核句子仍可能含语言或教学质量问题；教学使用前需要后续 Agent/Evaluator 检查上下文。
 - 模型与索引缓存依赖本机路径，部署时应先运行下载和建索引脚本。
+- 语料导入后必须运行建索引脚本发布新版本；在发布前运行中的进程继续使用旧的只读快照。各进程在其下一次 Workflow 请求时独立发现并加载新版本。

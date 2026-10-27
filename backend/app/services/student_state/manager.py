@@ -310,7 +310,7 @@ class StudentStateManager:
                     LearningEvidenceRecord.student_id == evidence.student_id,
                     LearningEvidenceRecord.knowledge_node_id == node_id,
                     LearningEvidenceRecord.outcome == EvidenceOutcome.SUCCESS,
-                LearningEvidenceRecord.hint_level <= 1,
+                    LearningEvidenceRecord.hint_level <= 1,
                     or_(
                         LearningEvidenceRecord.independent_revision.is_(True),
                         LearningEvidenceRecord.hint_level == 0,
@@ -457,7 +457,7 @@ class StudentStateManager:
                     LearningEvidenceRecord.knowledge_node_id == node_id,
                     LearningEvidenceRecord.outcome == EvidenceOutcome.SUCCESS,
                     LearningEvidenceRecord.observed_at > latest_failure,
-                LearningEvidenceRecord.hint_level <= 1,
+                    LearningEvidenceRecord.hint_level <= 1,
                     or_(
                         LearningEvidenceRecord.independent_revision.is_(True),
                         LearningEvidenceRecord.hint_level == 0,

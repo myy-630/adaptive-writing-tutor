@@ -137,7 +137,7 @@ export function LearningStatePanel({ session }: WorkspaceProps) {
     <div className="panel-heading"><span className="icon-box violet"><Target size={18} /></span><div><h2>学习状态</h2><p>Student State 当前估计</p></div></div>
     <p className="goal">目标：{state.student.learning_goal}</p>
     <div className="stack">{state.abilities.map(ability => <div className="mastery-row" key={ability.dimension}><div><span>{labels[ability.dimension] ?? ability.dimension}</span><strong>{Math.round(ability.rubric_score * 100)}%</strong></div><div className="meter"><span style={{ width: `${Math.round(ability.rubric_score * 100)}%` }} /></div></div>)}</div>
-    <small className="state-footnote">{evidenceCount ? `依据 ${evidenceCount} 条能力证据更新` : '尚无能力证据，当前为初始估计'}</small>
+    <small className="state-footnote">{evidenceCount ? `依据 ${evidenceCount} 条过程性量表证据更新，仅反映已检查的写作特征` : '尚无量表证据，当前为初始估计'}</small>
   </section>
 }
 

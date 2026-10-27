@@ -319,7 +319,89 @@ def test_full_essay_workflow_and_idempotent_response() -> None:
                 )
                 == 9
             )
+            events = db.scalars(
+                select(WorkflowEventRecord).where(WorkflowEventRecord.session_id == session_id)
+            ).all()
+            scored = [
+                event.stage_outcome
+                for event in events
+                if event.stage_outcome and event.stage_outcome.get("rubric")
+            ]
+            assert len(scored) == 6
+            for outcome in scored:
+                assert outcome["evidence"]["rubric_score"] == outcome["rubric"]["score"]
+                assert outcome["rubric"]["version"] == "observable-writing-v1"
+        abilities = {
+            item.dimension.value: item for item in manager.read_student_state(student_id).abilities
+        }
+        assert {name: item.evidence_count for name, item in abilities.items()} == {
+            "content": 1,
+            "grammar": 2,
+            "prompt_analysis": 1,
+            "sentence_expression": 1,
+            "structure": 1,
+        }
+        expected_scores = {name: settings.ability_initial_score for name in abilities}
+        for event in sorted(events, key=lambda item: item.created_at):
+            outcome = event.stage_outcome or {}
+            if outcome.get("rubric"):
+                dimension = outcome["evidence"]["ability_dimension"]
+                expected_scores[dimension] = (
+                    settings.ability_ema_alpha * outcome["rubric"]["score"]
+                    + (1 - settings.ability_ema_alpha) * expected_scores[dimension]
+                )
+        for name, ability in abilities.items():
+            assert ability.rubric_score == pytest.approx(expected_scores[name])
+        assert sum(ability.evidence_count for ability in abilities.values()) == 6
         assert manager.read_student_state(student_id).prompt_dependency.evidence_count == 8
+    finally:
+        engine.dispose()
+
+
+def test_scored_evidence_recovery_after_stage_commit() -> None:
+    setup = setup_workflow(ScriptedProvider())
+    _, engine, sessions, manager, student_id, session_id, store, *_ = setup
+    submission = WorkflowSubmission(
+        kind="response",
+        prompt_analysis=PromptAnalysisAnswer(
+            audience="my classmates at school",
+            purpose="describe the events of our school day",
+            genre="narrative",
+            required_points=["school day"],
+            tense="present",
+            person="first",
+            constraints="include the classes and my own feelings",
+        ),
+    )
+    try:
+        assert store.register(session_id, student_id, submission) is None
+        with sessions.begin() as db:
+            event = db.get(WorkflowEventRecord, submission.request_id, with_for_update=True)
+            assert event is not None
+            committed_outcome = store._apply_new(db, event)
+        assert committed_outcome.rubric is not None
+        prompt_before = next(
+            item
+            for item in manager.read_student_state(student_id).abilities
+            if item.dimension.value == "prompt_analysis"
+        )
+        assert prompt_before.evidence_count == 0
+
+        recovered = store.apply(submission.request_id)
+        assert recovered.rubric == committed_outcome.rubric
+        assert recovered.evidence is not None
+        assert recovered.evidence.rubric_score == recovered.rubric.score
+        assert store.apply(submission.request_id) == recovered
+        prompt_after = next(
+            item
+            for item in manager.read_student_state(student_id).abilities
+            if item.dimension.value == "prompt_analysis"
+        )
+        assert prompt_after.evidence_count == 1
+        assert prompt_after.rubric_score > prompt_before.rubric_score
+        with sessions() as db:
+            session = db.get(TeachingSessionRecord, session_id)
+            assert session is not None and session.stage == TeachingStage.FIRST_DRAFT
     finally:
         engine.dispose()
 
@@ -371,7 +453,17 @@ def test_stage_failure_invalid_input_and_entry_gate() -> None:
             )
             assert first.stage == TeachingStage.PROMPT_ANALYSIS
             assert first.stage_passed is False
-            assert manager.read_student_state(student_id).interaction.consecutive_failures == 1
+            state = manager.read_student_state(student_id)
+            assert state.interaction.consecutive_failures == 1
+            prompt_ability = next(
+                item for item in state.abilities if item.dimension.value == "prompt_analysis"
+            )
+            assert prompt_ability.evidence_count == 1
+            assert prompt_ability.rubric_score < 0.5
+            assert (
+                prompt_ability.rubric_score
+                > (1 - settings.ability_ema_alpha) * settings.ability_initial_score
+            )
             return first
 
     try:
@@ -649,6 +741,12 @@ def test_independent_mode_suppresses_teaching_generation() -> None:
         assert next_turn.teaching_text is None
         assert provider.teaching_calls == 0
         assert provider.evaluation_calls == 0
+        prompt_ability = next(
+            item
+            for item in manager.read_student_state(student_id).abilities
+            if item.dimension.value == "prompt_analysis"
+        )
+        assert prompt_ability.evidence_count == 6
     finally:
         engine.dispose()
 

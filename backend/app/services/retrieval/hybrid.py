@@ -5,7 +5,8 @@ import tempfile
 from collections import defaultdict
 from importlib.metadata import version
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
+from zipfile import BadZipFile
 
 import numpy as np
 from app.core.config import Settings
@@ -15,6 +16,7 @@ from app.domain.schemas import RetrievalResource, RetrievalResult
 from app.services.retrieval.schemas import IndexMetadata, QueryRewrite, RetrievalQuery
 from app.services.retrieval.store import ResourceStore
 from fastembed import TextEmbedding
+from pydantic import ValidationError
 from rank_bm25 import BM25Okapi
 
 TOKEN_PATTERN = re.compile(r"[a-z]+(?:'[a-z]+)?")
@@ -62,6 +64,7 @@ class HybridRetriever:
         )
         vectors = self._normalize(vectors)
         metadata = IndexMetadata(
+            index_version=uuid4().hex,
             corpus_sha256=self._corpus_hash(resources),
             model_name=self.settings.embedding_model,
             fastembed_version=version("fastembed"),
@@ -75,11 +78,17 @@ class HybridRetriever:
                 handle,
                 ids=np.array([str(item.id) for item in resources]),
                 vectors=vectors,
+                index_version=np.array(metadata.index_version),
             )
             temporary_index = Path(handle.name)
         temporary_index.replace(path)
         meta_path = path.with_suffix(".json")
-        meta_path.write_text(metadata.model_dump_json(indent=2), encoding="utf-8")
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent, suffix=".json", delete=False
+        ) as handle:
+            handle.write(metadata.model_dump_json(indent=2))
+            temporary_metadata = Path(handle.name)
+        temporary_metadata.replace(meta_path)
         self._activate(resources, vectors, model, metadata)
         return metadata
 
@@ -88,7 +97,10 @@ class HybridRetriever:
         meta_path = path.with_suffix(".json")
         if not path.exists() or not meta_path.exists():
             raise DomainError("index_missing", "Retrieval index has not been built", 409)
-        metadata = IndexMetadata.model_validate_json(meta_path.read_text(encoding="utf-8"))
+        try:
+            metadata = IndexMetadata.model_validate_json(meta_path.read_text(encoding="utf-8"))
+        except (OSError, ValidationError) as exc:
+            raise DomainError("index_corrupt", "Retrieval index metadata is invalid", 409) from exc
         resources = self.store.list_resources()
         if metadata.corpus_sha256 != self._corpus_hash(resources):
             raise DomainError(
@@ -98,9 +110,19 @@ class HybridRetriever:
             raise DomainError("index_model_mismatch", "Embedding model differs from index", 409)
         if metadata.fastembed_version != version("fastembed"):
             raise DomainError("index_version_mismatch", "FastEmbed version differs from index", 409)
-        with np.load(path, allow_pickle=False) as archive:
-            ids = archive["ids"].tolist()
-            vectors = archive["vectors"]
+        try:
+            with np.load(path, allow_pickle=False) as archive:
+                ids = archive["ids"].tolist()
+                vectors = archive["vectors"]
+                archive_version = (
+                    str(archive["index_version"].item())
+                    if "index_version" in archive.files
+                    else "legacy"
+                )
+        except (OSError, ValueError, KeyError, EOFError, BadZipFile) as exc:
+            raise DomainError("index_corrupt", "Retrieval index data is invalid", 409) from exc
+        if archive_version != metadata.index_version:
+            raise DomainError("index_version_mismatch", "Index files have different versions", 409)
         if ids != [str(item.id) for item in resources] or vectors.shape != (
             len(resources),
             metadata.embedding_dimension,

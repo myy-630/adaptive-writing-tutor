@@ -17,6 +17,7 @@
 
 - 离散知识点：标准 BKT 观察后验，再应用学习转移。`BKT_INITIAL_MASTERY`、`BKT_LEARN`、`BKT_GUESS`、`BKT_SLIP` 可由环境变量配置。只用明确成功/失败更新 mastery；`uncertain` 保留记录但不增加判定性证据计数。
 - 开放写作能力：`new = ABILITY_EMA_ALPHA × rubric_score + (1 − ABILITY_EMA_ALPHA) × old`。仅带有效 Rubric Score 的证据更新该维度。
+- Workflow 的 `ObservableWritingRubric` 在对应阶段根据学生提交材料产生 0–1 分；评分标准与适用范围见 [五维写作能力的过程性量表](ABILITY_RUBRIC.md)。本模块只验证分数并执行 EMA，不负责评分。
 - confidence：`decisive_evidence_count / (decisive_evidence_count + CONFIDENCE_PRIOR_WEIGHT)`。
 - 平均提示等级：所有已提交学习证据的 `hint_level` 总和除以证据数；`0` 代表独立完成。
 
@@ -26,7 +27,7 @@
 
 ## 已知限制
 
-当前尚未做 Student State 的 UI 展示、意图语义分析或 Planner 决策；这些属于后续模块。错误事件由上游 Analyzer/Workflow 生成，本模块只负责校验、持久化与聚合。状态更新依照提交顺序处理；历史证据回填需按时间顺序提交。
+Student State 的 UI 展示和 Planner 决策已由后续模块实现；意图语义分析仍只覆盖现有功能。错误事件由上游 Analyzer/Workflow 生成，本模块只负责校验、持久化与聚合。状态更新依照提交顺序处理；历史无量表分的证据不自动回填，若需回填必须按时间顺序提交可核对的评分结果。
 
 ## 外部依赖与数据来源
 

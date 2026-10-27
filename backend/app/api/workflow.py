@@ -1,4 +1,3 @@
-import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Request
@@ -26,8 +25,6 @@ from app.services.knowledge_graph.graph import GrammarKnowledgeGraph
 from app.services.knowledge_graph.path import GrammarLearningPathPlanner
 from app.services.knowledge_graph.schemas import KnowledgeNode, NodeOverlay
 from app.services.pedagogy.policy import PedagogyPolicy
-from app.services.retrieval.hybrid import HybridRetriever
-from app.services.retrieval.store import ResourceStore
 from app.services.student_state.manager import StudentStateManager
 from app.services.student_state.schemas import StudentStateSnapshot
 from app.workflows.graph import WritingWorkflow
@@ -42,12 +39,11 @@ from app.workflows.schemas import (
 from app.workflows.stage_gate import StageGate
 from app.workflows.store import WorkflowStore
 
-logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 def _sessions(request: Request) -> sessionmaker[Session]:
-    return sessionmaker(bind=request.app.state.engine, expire_on_commit=False)
+    return request.app.state.sessions
 
 
 def _manager(request: Request) -> StudentStateManager:
@@ -225,13 +221,7 @@ async def workflow_turn(
     manager = _manager(request)
     knowledge_graph = GrammarKnowledgeGraph(sessions)
     analyzer = GrammarAnalyzer(knowledge_graph)
-    retriever = HybridRetriever(ResourceStore(sessions), settings)
-    try:
-        retriever.load_index()
-    except DomainError as exc:
-        if exc.code not in {"index_missing", "index_stale", "index_model_mismatch"}:
-            raise
-        logger.warning("retrieval index unavailable; tool fallback will be used: %s", exc.code)
+    retriever = request.app.state.retrieval_runtime.current()
     trace_store = ToolTraceStore(sessions)
     tools = build_agent_tools(manager, knowledge_graph, retriever, trace_store.record)
     policy = PedagogyPolicy()

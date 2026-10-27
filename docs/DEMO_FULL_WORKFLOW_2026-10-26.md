@@ -15,6 +15,8 @@
 
 数据库核对：该会话有 10 个工作流事件（其中 1 次语法未通过）、7 个保存的稿件版本、26 条 Tool Trace、9 条学习证据。Student State 的提示依赖统计含 9 条证据，时态知识节点有 2 条证据；能力分仍显示初始 50%，因为这次演示没有产生可用于能力 EMA 的量表分数，不能把阶段通过率伪装成能力评分。
 
+2026-10-27 已为新提交接入独立的 [五维过程性量表](ABILITY_RUBRIC.md)。本页记录的是修复前的历史演示；其既有证据没有自动回填或改写。新的真实 DeepSeek 审题演示已验证量表分 1.00 写入证据后，审题能力按 EMA 从 0.50 更新为 0.65。
+
 工作流记录的 Policy 动作包括 `location_hint`、`socratic_question`、`break_down`、`self_check` 和 `independent_retry`；九个生成回复的在线 Pedagogy Evaluator 结果均为 `pass`。这条会话没有选择需要检索材料的动作，因此 26 条 Tool Trace 中没有 RAG 调用。为单独展示模块 4，另从 139 条本地资源索引以 `simple_past` 知识点过滤检索，实际返回一条项目演示迁移练习和一条项目演示语法讲解，结果记录 BM25、dense、RRF、元数据过滤和重排理由。`tense` 的严格 ID 过滤未命中资源，反映当前教学语料覆盖有限，不应描述成这条会话使用了 RAG。模块 10 的写作对比、Policy 消融和 MRBench 校准固定报告均成功冻结回放。
 
 另创建了一个要求 `independent` Mode 的全新八年级示例会话。Planner 读取到该学生尚无能力或知识证据后，依规则改选 `guided`，随后 Policy 给出 `location_hint`、Teaching Agent 生成教学回复、Evaluator 判为 `pass`。这证明 Mode 由 Planner 决定，而非客户端的初始请求强制决定；不能把这个会话当作独立模式的现场演示。独立模式的无教学输出和 UI 权限由既有集成与前端测试覆盖。
