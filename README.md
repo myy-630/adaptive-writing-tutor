@@ -20,7 +20,7 @@
 - Student State Manager：事务化学生初始化、学习证据去重、BKT、开放能力 EMA、提示依赖和分时间窗口的错误模式统计。
 - Grammar Knowledge Graph：稳定知识节点、七类有向关系、前置知识检查、错误映射和学生掌握度叠加。
 - 语法多步学习路径：当前错误的前置知识拓扑排序、长期薄弱点复习分支、三状态掌握度判断与进出门槛；详见 [语法学习路径](docs/GRAMMAR_LEARNING_PATH.md)。
-- Hybrid Retrieval：133 条带署名与许可的公开 Tatoeba 句子、6 条明确标记的项目演示资源、BM25 + 本地 dense + RRF + Metadata Filter + Rerank；索引和模型在 FastAPI lifespan 中按进程复用，并按索引版本热切换。[运行时与缓存策略](docs/MODULE_04.md#运行时复用与缓存决策)。
+- Hybrid Retrieval：133 条带署名与许可的公开 Tatoeba 句子、6 条明确标记的项目演示资源、BM25 + 本地 dense + RRF + Metadata Filter + Rerank；索引和模型在 FastAPI lifespan 中按进程复用，按索引版本热切换，检索结果使用 Redis TTL 缓存。[运行时与缓存策略](docs/MODULE_04.md#运行时复用与-redis-结果缓存)。
 - Grammar Analyzer：保守规则诊断，输出错误位置、修改后完整句子、结构变化、置信度和知识图谱节点；诊断结果不直接进入学生 UI。
 - Pedagogy Policy：依据阶段、模式、学生状态与当前意图，对教学动作做硬约束过滤和可解释排序，输出结构化教学决策。
 - Planner、Teaching Agent、独立 Pedagogy Evaluator，带工具权限、重试降级与 PostgreSQL Trace；DeepSeek Responses 适配器已完成真实调用验收。
@@ -31,6 +31,7 @@
 一次真实浏览器与 DeepSeek 的八阶段示例见[全流程演示记录](docs/DEMO_FULL_WORKFLOW_2026-10-26.md)。
 量表接线的实现范围和实测结果见[补充验收记录](docs/ABILITY_RUBRIC_REPORT_2026-10-27.md)。
 检索器的进程复用、索引版本切换和缓存测量见[运行时补充验收记录](docs/RETRIEVAL_RUNTIME_REPORT_2026-10-27.md)。
+Redis 结果缓存的功能与真实连接验收见[Redis 补充验收记录](docs/REDIS_CACHE_REPORT_2026-10-27.md)。
 
 ## 本地启动
 
@@ -49,6 +50,8 @@ cp .env.example .env
 .venv/bin/python scripts/build_retrieval_index.py
 .venv/bin/uvicorn app.api.main:app --reload
 ```
+
+另开终端启动 Redis，例如 macOS Homebrew 下运行 `brew install redis`、`brew services start redis`。默认连接 `redis://127.0.0.1:6379/0`；使用远端服务时在私有 `.env` 中设置 `REDIS_URL`。Redis 不可用时检索会直接计算并继续服务。缓存配置见 [.env.example](.env.example)，真实连接可运行 `.venv/bin/python scripts/demo_retrieval_cache_live.py` 检查。
 
 另开终端运行前端：
 

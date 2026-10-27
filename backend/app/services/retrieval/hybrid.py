@@ -13,6 +13,7 @@ from app.core.config import Settings
 from app.core.errors import DomainError
 from app.domain.enums import ResourceType
 from app.domain.schemas import RetrievalResource, RetrievalResult
+from app.services.retrieval.cache import RedisRetrievalCache
 from app.services.retrieval.schemas import IndexMetadata, QueryRewrite, RetrievalQuery
 from app.services.retrieval.store import ResourceStore
 from fastembed import TextEmbedding
@@ -45,9 +46,12 @@ def reciprocal_rank_fusion(
 
 
 class HybridRetriever:
-    def __init__(self, store: ResourceStore, settings: Settings) -> None:
+    def __init__(
+        self, store: ResourceStore, settings: Settings, cache: RedisRetrievalCache | None = None
+    ) -> None:
         self.store = store
         self.settings = settings
+        self.cache = cache
         self.resources: list[RetrievalResource] = []
         self.vectors: np.ndarray | None = None
         self.bm25: BM25Okapi | None = None
@@ -139,6 +143,10 @@ class HybridRetriever:
             raise DomainError(
                 "index_missing", "Load or build the retrieval index before search", 409
             )
+        if self.cache is not None and self.metadata is not None:
+            cached = self.cache.get(self.metadata.index_version, query)
+            if cached is not None:
+                return cached
         rewrite = rewrite_query(query.text)
         lexical_scores = self.bm25.get_scores(rewrite.bm25_terms)
         query_vector = self._normalize(
@@ -166,7 +174,7 @@ class HybridRetriever:
             key=lambda item: (-self._rerank_score(item, rewrite, fused[item.id]), str(item.id)),
         )[: query.top_k]
         lexical_set = {self.resources[index].id for index in lexical_indices}
-        return [
+        results = [
             RetrievalResult(
                 resource=item,
                 rank=rank,
@@ -181,6 +189,9 @@ class HybridRetriever:
             )
             for rank, item in enumerate(ranked, start=1)
         ]
+        if self.cache is not None and self.metadata is not None:
+            self.cache.put(self.metadata.index_version, query, results)
+        return results
 
     def find_writing_prompts(self, text: str, top_k: int = 3) -> list[RetrievalResult]:
         return self.search(

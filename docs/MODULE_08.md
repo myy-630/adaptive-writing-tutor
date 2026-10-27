@@ -6,7 +6,7 @@
 
 `SharedState` 包含请求与会话身份、提交内容、当前 Stage/Mode、题目与 Draft、Planner 计划、诊断、Policy 上下文和决策、教学回复、独立评价、重试次数、阶段结果和最终输出。LangGraph 只决定节点与路由；阶段门槛在 `StageGate`，草稿比较在 `draft_comparison`，学习证据由 `StudentStateManager` 事务化写入，事件与草稿由 `WorkflowStore` 持久化。Tool Runtime 处理工具权限、超时、重试、降级和 Trace。
 
-HTTP 层从 FastAPI lifespan 取得进程内只读检索快照及模型 Provider，索引版本变化时替换完整检索快照；Student State Manager 仍按请求读取数据库，不复用学生状态或模型回复。检索结果缓存目前没有启用，原因与实测见 [模块 4 说明](MODULE_04.md)。
+HTTP 层从 FastAPI lifespan 取得进程内只读检索快照及模型 Provider，索引版本变化时替换完整检索快照；检索结果通过 [Redis cache-aside](MODULE_04.md#运行时复用与-redis-结果缓存) 复用。Student State Manager 仍按请求读取数据库，不复用学生状态或模型回复。Tool 权限与 Trace 在每次调用时执行，不受缓存命中影响。
 
 进入最终评估阶段时，Draft 2 已保存，工作流直接结束该次提交；页面下一步只有 `finalize`，因此不会再生成要求学生提交新稿的教学话术。`finalize` 由 `StageGate` 计算两稿对比与学习证据。Pedagogy Evaluator 同时会拦截在二次重写之前把当前草稿误称为已完成 Draft 2 的回复。
 

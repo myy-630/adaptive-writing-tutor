@@ -6,6 +6,7 @@ from threading import Lock
 
 from app.core.config import Settings
 from app.core.errors import DomainError
+from app.services.retrieval.cache import RedisRetrievalCache
 from app.services.retrieval.hybrid import HybridRetriever
 from app.services.retrieval.schemas import IndexMetadata
 from app.services.retrieval.store import ResourceStore
@@ -18,11 +19,21 @@ logger = logging.getLogger(__name__)
 class RetrievalRuntime:
     """Load one immutable retriever per index version, swapping complete snapshots only."""
 
-    def __init__(self, store: ResourceStore, settings: Settings) -> None:
+    def __init__(
+        self,
+        store: ResourceStore,
+        settings: Settings,
+        cache: RedisRetrievalCache | None = None,
+    ) -> None:
         self.store = store
         self.settings = settings
         self._lock = Lock()
-        self._retriever = HybridRetriever(store, settings)
+        self.cache = (
+            (cache if cache is not None else RedisRetrievalCache(settings))
+            if settings.retrieval_cache_enabled
+            else None
+        )
+        self._retriever = HybridRetriever(store, settings, self.cache)
         self._checked_version: str | None = None
         self._initialized = False
 
@@ -52,7 +63,7 @@ class RetrievalRuntime:
                 self._initialized = True
                 return self._retriever
 
-            candidate = HybridRetriever(self.store, self.settings)
+            candidate = HybridRetriever(self.store, self.settings, self.cache)
             try:
                 metadata = candidate.load_index()
             except DomainError as exc:
@@ -90,9 +101,11 @@ class RetrievalRuntime:
             self._unload()
             self._initialized = False
             self._checked_version = None
+            if self.cache is not None:
+                self.cache.close()
 
     def _unload(self) -> None:
-        self._retriever = HybridRetriever(self.store, self.settings)
+        self._retriever = HybridRetriever(self.store, self.settings, self.cache)
 
     def _published_version(self) -> str | None:
         path = self.settings.retrieval_index_path

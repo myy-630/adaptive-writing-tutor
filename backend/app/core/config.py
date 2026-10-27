@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_cache_dir: Path = Path("data/indexes/model_cache")
     retrieval_index_path: Path = Path("data/indexes/resources.npz")
+    retrieval_cache_enabled: bool = True
+    redis_url: SecretStr = SecretStr("redis://127.0.0.1:6379/0")
+    retrieval_cache_ttl_seconds: int = Field(default=300, ge=1)
+    retrieval_cache_timeout_seconds: float = Field(default=0.2, gt=0, le=5)
+    retrieval_cache_retry_seconds: int = Field(default=30, ge=1)
     rrf_k: int = Field(default=60, ge=1)
     model_provider: Literal["deepseek", "openai"] = "deepseek"
     deepseek_api_key: SecretStr | None = None
